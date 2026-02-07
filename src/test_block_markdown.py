@@ -78,6 +78,9 @@ This is the same paragraph on a new line
         block = "- One\n- Two\n1. Test\n 2. Mistake"
         self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
 
+    def test_block_to_block_type_quote(self):
+        block = ">This\n>is\n>quote"
+        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
 
 if __name__ == "__main__":
     unittest.main()

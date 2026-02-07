@@ -37,15 +37,20 @@ def block_to_block_type(block):
         return BlockType.QUOTE
     lines = block.split("\n")
     expected = 1
+    found_quote = False
     found_ordered = False
     found_unordered = False
     for line in lines:
+        if is_quote(line):
+            if found_ordered or found_unordered:
+                return BlockType.PARAGRAPH
+            found_quote = True
         if is_unordered_list(line):
-            if found_ordered:
+            if found_ordered or found_quote:
                 return BlockType.PARAGRAPH
             found_unordered = True
         elif is_ordered_list(line):
-            if found_unordered:
+            if found_unordered or found_quote:
                 return BlockType.PARAGRAPH
             found_ordered = True
             num = get_ordered_list_number(line)
@@ -54,7 +59,9 @@ def block_to_block_type(block):
             expected += 1
         else:
             return BlockType.PARAGRAPH
-    if found_unordered:
+    if found_quote:
+        return BlockType.QUOTE
+    elif found_unordered:
         return BlockType.UNORDERED_LIST
     elif found_ordered:
         return BlockType.ORDERED_LIST

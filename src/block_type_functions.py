@@ -28,19 +28,14 @@ def is_heading(block):
     return False
 
 
-def is_quote(block):
-    if block.startswith(">"):
-        check_lines = block.split("\n")
-        if len(check_lines) == 1:
-            line = check_lines[0]
-            text = line[1:]
-            strip_text = text.strip()
-            return len(strip_text) > 0
-    return False
+def is_quote(line):
+    if not line.startswith(">"):
+        return False
+    return len(line.strip()) > 1
 
 
-def is_unordered_list(block):
-    check_lines = block.split("\n")
+def is_unordered_list(line):
+    check_lines = line.split("\n")
     if len(check_lines) != 1:
         return False
     line = check_lines[0]
