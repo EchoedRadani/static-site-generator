@@ -1,4 +1,12 @@
 from enum import Enum
+from block_type_functions import (
+    is_code_block,
+    is_heading,
+    is_quote,
+    is_unordered_list,
+    is_ordered_list,
+    get_ordered_list_number
+)
 
 
 class BlockType(Enum):
@@ -23,89 +31,31 @@ def markdown_to_blocks(markdown):
 def block_to_block_type(block):
     if is_code_block(block):
         return BlockType.CODE
-    elif is_heading(block):
+    if is_heading(block):
         return BlockType.HEADING
-    elif is_quote(block):
+    if is_quote(block):
         return BlockType.QUOTE
-    elif is_unordered_list(block):
-        return BlockType.UNORDERED_LIST
-    elif is_ordered_list(block):
-        return BlockType.ORDERED_LIST
-    else:
-        return BlockType.PARAGRAPH
-    
-
-def is_code_block(block):
-    if block.startswith("```\n") and block.endswith("\n```"):
-        midde = block[4:-3]
-        stripped_middle = midde.strip()
-        return len(stripped_middle) > 0
-    return False
-
-
-def is_heading(block):
-    if block.startswith("#"):
-        check_lines = block.split("\n")
-        if len(check_lines) == 1:
-            line = check_lines[0]
-            count = 0
-            for letter in line:
-                if letter == "#":
-                    count += 1
-                else:
-                    break
-            if len(line) > count + 1:
-                line_space = line[count]
-                text = line[count + 1:]
-                is_line_space = line_space == " "
-                is_text = len(text) > 0
-                return 0 < count <= 6 and is_line_space and is_text
-            else:
-                return False
-    return False
-
-
-def is_quote(block):
-    if block.startswith(">"):
-        check_lines = block.split("\n")
-        if len(check_lines) == 1:
-            line = check_lines[0]
-            text = line[1:]
-            strip_text = text.strip()
-            return len(strip_text) > 0
-    return False
-
-
-def is_unordered_list(block):
-    check_lines = block.split("\n")
-    if len(check_lines) != 1:
-        return False
-    line = check_lines[0]
-    if not line.startswith("- "):
-        return False
-    text = line[2:]
-    return len(text.strip()) > 0
-
-
-def is_ordered_list(block):
-    check_lines = block.split("\n")
-    if len(check_lines) != 1:
-        return False
-    line = check_lines[0]
-    count = 0
-    for char in line:
-        if char.isdigit():
-            count += 1
+    lines = block.split("\n")
+    expected = 1
+    found_ordered = False
+    found_unordered = False
+    for line in lines:
+        if is_unordered_list(line):
+            if found_ordered:
+                return BlockType.PARAGRAPH
+            found_unordered = True
+        elif is_ordered_list(line):
+            if found_unordered:
+                return BlockType.PARAGRAPH
+            found_ordered = True
+            num = get_ordered_list_number(line)
+            if num != expected:
+                return BlockType.PARAGRAPH
+            expected += 1
         else:
-            break
-    if len(line) <= count:
-        return False
-    if count == 0 or line[count] != ".":
-        return False
-    if not len(line) > count + 2:
-        return False
-    line_space = line[count + 1]
-    text = line[count + 2:]
-    if line_space != " ":
-        return False
-    return len(text.strip()) != 0
+            return BlockType.PARAGRAPH
+    if found_unordered:
+        return BlockType.UNORDERED_LIST
+    elif found_ordered:
+        return BlockType.ORDERED_LIST
+    return BlockType.PARAGRAPH
