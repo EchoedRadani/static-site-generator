@@ -15,19 +15,23 @@ def copy_static_to_public(source, destination):
         else:
             copy_static_to_public(source_path, destination_path)
 
-static_source = "./static"
-page_source = "./content/index.md"
-static_destination = "./public"
-page_destination = "./public/index.html"
-template = "template.html"
+dir_static_path = "./static"
+dir_public_path = "./public"
+dir_page_content = "./content"
+template = "./template.html"
 
 
 def main():
     print("Deleting public directory...")
-    if os.path.exists(static_destination):
-        shutil.rmtree(static_destination)
-    copy_static_to_public(static_source, static_destination)
-    generate_page(page_source, template, page_destination)
+    if os.path.exists(dir_public_path):
+        shutil.rmtree(dir_public_path)
+    copy_static_to_public(dir_static_path, dir_public_path)
+    print("Generating page...")
+    generate_page(
+        os.path.join(dir_page_content, "index.md"),
+        template,
+        os.path.join(dir_public_path, "index.html")
+    )
 
 
 main()
